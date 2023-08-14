@@ -47,7 +47,8 @@ func CreateUserController(c echo.Context) error {
 // get all users
 func GetUsersController(c echo.Context) error {
 	// render JSON response with success message and users data
-	....
+	data := &users
+	return c.JSON(http.StatusOK, data)
 }
 
 // get user by id
@@ -57,7 +58,7 @@ func GetUserController(c echo.Context) error {
 
 	// find data by id, then render data - JSON response
 	for _, v := range users {
-		if v.Id == .... {
+		if v.Id == id {
 			return c.JSON(http.StatusOK, map[string]interface{}{
 				"messages": "success user found",
 				"user":     v,
@@ -75,36 +76,49 @@ func GetUserController(c echo.Context) error {
 // update user by id
 func UpdateUserController(c echo.Context) error {
 	// catch path param from url
-	....
+	id, _ := strconv.Atoi(c.Param("id"))
 
 	// binding data
-	....
+	var input User
+	if err := c.Bind(&input); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"message": "Invalid binding data",
+		})
+	}
 
 	// find data and change the value, then render JSON response
-	for _, v := range users {
+	for i, v := range users {
 		if v.Id == id {
-			v.Name = input.Name
-			....
+			users[i].Id = input.Id
+			users[i].Name = input.Name
+			users[i].Address = input.Address
+			users[i].Email = input.Email
+
 			return c.JSON(http.StatusOK, map[string]interface{}{
 				"messages": "success updated user",
-				"user":     ....,
+				"user":     input,
 			})
 		}
 	}
 
 	// when the data does not exist render JSON response with not found message
-	....
+	return c.JSON(http.StatusNotFound, map[string]interface{}{
+		"messages": "User Not Found",
+		"user":     nil,
+	})
 }
 
 // delete user by id
 func DeleteUserController(c echo.Context) error {
-	// catch path param from url
-	....
+	// catch path param from URL
+	id, _ := strconv.Atoi(c.Param("id"))
 
 	// looking for data in index of slice users, then delete element in slice users and render JSON response
-	for _, v := range users {
+	for i, v := range users {
 		if v.Id == id {
-			....
+			// Remove the user from the slice
+			users = append(users[:i], users[i+1:]...)
+
 			return c.JSON(http.StatusOK, map[string]interface{}{
 				"messages": "delete success",
 			})
@@ -112,7 +126,9 @@ func DeleteUserController(c echo.Context) error {
 	}
 
 	// when the data does not exist render JSON response with not found message
-	....
+	return c.JSON(http.StatusNotFound, map[string]interface{}{
+		"messages": "User Not Found",
+	})
 }
 
 // ---------------------------------------------------
